@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: black;
+}
+
+canvas {
+  display: block;
+}
+
+#infoBox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: sans-serif;
+  max-width: 250px;
+  display: none;
+}
