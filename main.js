@@ -5,7 +5,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// === LUMIÈRE (Soleil comme source) ===
+// === LUMIÈRE (Soleil) ===
 const sunlight = new THREE.PointLight(0xffffff, 2, 0);
 scene.add(sunlight);
 
@@ -15,23 +15,23 @@ camera.position.set(0, 80, 180);
 controls.update();
 
 // === SOLEIL ===
-const sunTexture = new THREE.TextureLoader().load('assets/sun.jpg');
+const sunTexture = new THREE.TextureLoader().load('assets/Soleil.jpeg');
 const sun = new THREE.Mesh(
   new THREE.SphereGeometry(12, 64, 64),
   new THREE.MeshBasicMaterial({ map: sunTexture })
 );
 scene.add(sun);
 
-// === TABLEAU DES PLANÈTES ===
+// === PLANÈTES ===
 const planetData = [
-  { name: "Mercure", size: 1, dist: 20, speed: 0.04, texture: 'assets/mercury.jpg' },
-  { name: "Vénus",   size: 1.8, dist: 30, speed: 0.015, texture: 'assets/venus.jpg' },
-  { name: "Terre",   size: 2, dist: 40, speed: 0.01, texture: 'assets/earth.jpg' },
-  { name: "Mars",    size: 1.5, dist: 50, speed: 0.008, texture: 'assets/mars.jpg' },
-  { name: "Jupiter", size: 6, dist: 70, speed: 0.004, texture: 'assets/jupiter.jpg' },
-  { name: "Saturne", size: 5, dist: 90, speed: 0.003, texture: 'assets/saturn.jpg' },
-  { name: "Uranus",  size: 4, dist: 110, speed: 0.002, texture: 'assets/uranus.jpg' },
-  { name: "Neptune", size: 4, dist: 130, speed: 0.001, texture: 'assets/neptune.jpg' }
+  { name: "Mercure", size: 1, dist: 20, speed: 0.04, texture: 'assets/Mercure.jpeg' },
+  { name: "Vénus",   size: 1.8, dist: 30, speed: 0.015, texture: 'assets/Venus.jpeg' },
+  { name: "Terre",   size: 2, dist: 40, speed: 0.01, texture: 'assets/Terre.jpeg' },
+  { name: "Mars",    size: 1.5, dist: 50, speed: 0.008, texture: 'assets/Mars.jpeg' },
+  { name: "Jupiter", size: 6, dist: 70, speed: 0.004, texture: 'assets/Jupiter.jpeg' },
+  { name: "Saturne", size: 5, dist: 90, speed: 0.003, texture: 'assets/Saturne.jpeg', ring: 'assets/RingSaturne.png' },
+  { name: "Uranus",  size: 4, dist: 110, speed: 0.002, texture: 'assets/Uranus.jpeg' },
+  { name: "Neptune", size: 4, dist: 130, speed: 0.001, texture: 'assets/Neptune.jpeg' }
 ];
 
 const planets = [];
@@ -47,7 +47,18 @@ planetData.forEach(data => {
   scene.add(planet);
   planets.push(planet);
 
-  // orbite (cercle)
+  // --- Anneau pour Saturne ---
+  if(data.ring){
+    const ringTexture = new THREE.TextureLoader().load(data.ring);
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(data.size + 0.5, data.size + 2.5, 64),
+      new THREE.MeshBasicMaterial({ map: ringTexture, side: THREE.DoubleSide, transparent: true })
+    );
+    ring.rotation.x = - Math.PI / 2;
+    planet.add(ring);
+  }
+
+  // --- Orbite
   const curve = new THREE.EllipseCurve(0, 0, data.dist, data.dist);
   const points = curve.getPoints(100);
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -57,7 +68,7 @@ planetData.forEach(data => {
   scene.add(orbit);
 });
 
-// === INTERACTION AU CLIC ===
+// === INTERACTION CLIC ===
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const infoBox = document.getElementById('infoBox');
@@ -67,7 +78,7 @@ window.addEventListener('click', (event) => {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(planets);
-  if (intersects.length > 0) {
+  if(intersects.length > 0){
     const planet = intersects[0].object;
     const data = planet.userData;
     infoBox.innerHTML = `<strong>${data.name}</strong><br>
@@ -81,10 +92,10 @@ window.addEventListener('click', (event) => {
 });
 
 // === ANIMATION ===
-function animate() {
+function animate(){
   requestAnimationFrame(animate);
   sun.rotation.y += 0.001;
-  planets.forEach((planet) => {
+  planets.forEach(planet => {
     const data = planet.userData;
     const angle = Date.now() * 0.0005 * data.speed;
     planet.position.x = Math.cos(angle) * data.dist;
@@ -96,7 +107,7 @@ function animate() {
 }
 animate();
 
-// === ADAPTATION ÉCRAN ===
+// === ADAPTATION TAILLE ÉCRAN ===
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
