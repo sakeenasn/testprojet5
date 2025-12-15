@@ -8,7 +8,7 @@
 </head>
 
 <body>
-  <!-- ===== FOND ETOILÉ FIXE ===== -->
+  <!-- ===== FOND ÉTOILÉ FIXE ===== -->
   <div class="stars-layer"></div>
 
   <!-- ===== PANNEAU D'INFOS ===== -->
@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <!-- ===== SYSTEME SOLAIRE ===== -->
+  <!-- ===== SYSTÈME SOLAIRE ===== -->
   <div class="space-container">
     <div class="space">
       <div class="sun" data-name="Soleil"></div>
@@ -65,7 +65,7 @@
       color: white;
     }
 
-    /* --- FOND ETOILE --- */
+    /* --- FOND ÉTOILÉ --- */
     .stars-layer {
       position: fixed;
       top: 0; left: 0;
@@ -83,6 +83,7 @@
     }
     @keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
 
+    /* --- SYSTÈME --- */
     .space-container {
       width: 100vw; height: 100vh;
       display: flex;
@@ -108,7 +109,7 @@
       border: 1px dashed rgba(255,255,255,0.25);
       pointer-events: none;
       display: none;
-      z-index: 0; /* bien derrière tout */
+      z-index: 0;
     }
 
     .sun {
@@ -171,6 +172,7 @@
       z-index: 3;
     }
 
+    /* --- PANNEAU --- */
     #info-panel {
       position: absolute;
       top: 10px; left: 10px;
@@ -190,6 +192,7 @@
     }
 
     .controls-row { display: flex; gap: 10px; margin-top: 10px; }
+
     .control-btn {
       padding: 8px 12px;
       border-radius: 8px;
@@ -221,7 +224,7 @@
     let soundEnabled = true;
     let systemPaused = false;
 
-    /* --- ETOILES --- */
+    /* --- ÉTOILES --- */
     const starsLayer = document.querySelector(".stars-layer");
     for (let i = 0; i < 300; i++) {
       const star = document.createElement("div");
@@ -250,7 +253,7 @@
       planetText.innerHTML = planetInfo[name] || "Aucune information disponible.";
     }
 
-    /* --- ORBITES VISUELLES (mêmes paramètres que l’animation) --- */
+    /* --- ORBITES VISUELLES --- */
     function createOrbitShape(dx, dy) {
       const o = document.createElement("div");
       o.className = "orbit";
@@ -260,6 +263,7 @@
       orbitElements.push(o);
     }
 
+    /* --- ANIMATIONS --- */
     function orbit(planet, dx, dy, duration) {
       const anim = anime({
         targets: planet,
@@ -313,7 +317,7 @@
       Terre: new Audio("earth.mp3"),
       Mars: new Audio("mars.mp3"),
       Jupiter: new Audio("jupiter.mp3"),
-      Saturne: new Audio("saturn.mp3"),
+      Saturne: new Audio("saturne.mp3"),
       Uranus: new Audio("uranus.mp3"),
       Neptune: new Audio("neptune.mp3")
     };
@@ -343,8 +347,8 @@
 
     /* --- CLICS --- */
     planets.forEach(p => {
-      p.addEventListener("click", () => {
-        const name = p.dataset.name;
+      p.addEventListener("click", (e) => {
+        const name = e.currentTarget.dataset.name;
         showInfo(name);
         playSound(name);
       });
@@ -375,7 +379,6 @@
       applyZoom();
     });
 
-    /* molette zoom (comme avant) */
     window.addEventListener("wheel", e => {
       e.preventDefault();
       zoomLevel += e.deltaY * -0.001;
@@ -419,7 +422,6 @@
       toggleOrbitsBtn.textContent = orbitsVisible ? "💫 Orbites : ON" : "💫 Orbites : OFF";
     });
 
-    // état initial zoom affichage
     applyZoom();
   </script>
 </body>
