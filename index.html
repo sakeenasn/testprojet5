@@ -31,6 +31,7 @@
     <div class="controls-row">
       <button id="toggle-sound" class="control-btn">🔊 Son : ON</button>
       <button id="toggle-system" class="control-btn">⏸️ Pause système</button>
+      <button id="toggle-orbits" class="control-btn">💫 Orbites : OFF</button>
     </div>
   </div>
 
@@ -80,12 +81,8 @@
       opacity: 0.4;
       animation: twinkle 3s infinite alternate;
     }
-    @keyframes twinkle {
-      from { opacity: 0.3; }
-      to   { opacity: 1; }
-    }
+    @keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
 
-    /* --- SYSTEME --- */
     .space-container {
       width: 100vw; height: 100vh;
       display: flex;
@@ -101,6 +98,19 @@
       transition: transform 0.3s ease;
     }
 
+    /* ORBITES */
+    .orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px dashed rgba(255,255,255,0.25);
+      pointer-events: none;
+      display: none;
+      z-index: 0; /* bien derrière tout */
+    }
+
     .sun {
       position: absolute;
       top: 50%; left: 50%;
@@ -110,6 +120,7 @@
       box-shadow: 0 0 40px 20px rgba(255,200,50,0.8);
       transform: translate(-50%, -50%);
       cursor: pointer;
+      z-index: 3;
     }
 
     .planet {
@@ -117,6 +128,7 @@
       top: 50%; left: 50%;
       border-radius: 50%;
       cursor: pointer;
+      z-index: 2;
     }
 
     .mercury { width: 10px; height: 10px; background: gray; }
@@ -156,9 +168,9 @@
       background: white;
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(255,255,255,.8);
+      z-index: 3;
     }
 
-    /* --- PANNEAU --- */
     #info-panel {
       position: absolute;
       top: 10px; left: 10px;
@@ -166,8 +178,9 @@
       border-radius: 10px;
       padding: 15px;
       width: 330px;
-      z-index: 3;
+      z-index: 4;
     }
+
     .slider-container {
       display: flex;
       align-items: center;
@@ -175,6 +188,7 @@
       margin-top: 6px;
       font-size: 13px;
     }
+
     .controls-row { display: flex; gap: 10px; margin-top: 10px; }
     .control-btn {
       padding: 8px 12px;
@@ -183,6 +197,7 @@
       border: 1px solid rgba(255,255,255,0.2);
       color: white;
       cursor: pointer;
+      font-size: 13px;
     }
     .control-btn.off { background: rgba(255,0,0,0.15); }
     .control-btn.paused { background: rgba(255,255,255,0.1); }
@@ -193,17 +208,20 @@
     const planets = document.querySelectorAll(".planet");
     const sun = document.querySelector(".sun");
     const space = document.querySelector(".space");
-    const planetOrbits = [];
 
     const planetName = document.getElementById("planet-name");
     const planetText = document.getElementById("planet-info");
+
+    const planetOrbits = [];
+    const orbitElements = [];
+    let orbitsVisible = false;
 
     let globalSpeed = 1;
     let zoomLevel = 1;
     let soundEnabled = true;
     let systemPaused = false;
 
-    /* --- ETOILES (fond plein écran) --- */
+    /* --- ETOILES --- */
     const starsLayer = document.querySelector(".stars-layer");
     for (let i = 0; i < 300; i++) {
       const star = document.createElement("div");
@@ -216,61 +234,15 @@
 
     /* --- INFOS --- */
     const planetInfo = {
-      Soleil: `
-        ⭐ <b>Type :</b> Étoile naine jaune (G2V)<br>
-        🌡️ <b>Température surface :</b> 5 500 °C<br>
-        ⚡ <b>Âge :</b> 4,6 milliards d'années<br>
-        💥 <b>Rôle :</b> Source d'énergie et de gravité du système solaire
-      `,
-      Mercure: `
-        🟠 <b>Distance du Soleil :</b> 58 millions km<br>
-        ⏱️ <b>Année :</b> 88 jours terrestres<br>
-        🌡️ <b>Température :</b> -180°C à +430°C<br>
-        🧱 <b>Composition :</b> Roche métallique
-      `,
-      Vénus: `
-        💨 <b>Distance du Soleil :</b> 108 millions km<br>
-        ⏱️ <b>Année :</b> 225 jours terrestres<br>
-        🌫️ <b>Atmosphère :</b> CO₂ et nuages d'acide sulfurique<br>
-        🌡️ <b>Température moyenne :</b> 465°C
-      `,
-      Terre: `
-        🌍 <b>Distance du Soleil :</b> 150 millions km<br>
-        ⏱️ <b>Année :</b> 365 jours<br>
-        🌡️ <b>Température moyenne :</b> 15°C<br>
-        💧 <b>Spécificité :</b> Présence d'eau liquide et de vie
-        <br>🌙 <b>La lune :</b> Satellite naturel de la Terre<br>
-      `,
-      Mars: `
-        🔴 <b>Distance du Soleil :</b> 228 millions km<br>
-        ⏱️ <b>Année :</b> 687 jours terrestres<br>
-        🌡️ <b>Température moyenne :</b> -60°C<br>
-        🧱 <b>Surface :</b> poussière de fer rougeâtre, calottes de glace
-      `,
-      Jupiter: `
-        🌕 <b>Distance du Soleil :</b> 778 millions km<br>
-        ⏱️ <b>Année :</b> 12 ans terrestres<br>
-        💨 <b>Atmosphère :</b> Hydrogène et hélium<br>
-        ⚡ <b>Particularité :</b> La plus grande planète, grande tache rouge
-      `,
-      Saturne: `
-        ❄️ <b>Distance du Soleil :</b> 1,4 milliard km<br>
-        ⏱️ <b>Année :</b> 29 ans terrestres<br>
-        💠 <b>Anneaux :</b> Glace et poussière<br>
-        🌡️ <b>Température :</b> -140°C
-      `,
-      Uranus: `
-        💎 <b>Distance du Soleil :</b> 2,9 milliards km<br>
-        ⏱️ <b>Année :</b> 84 ans terrestres<br>
-        🌀 <b>Inclinaison :</b> 98° sur le côté<br>
-        🌡️ <b>Température :</b> -195°C
-      `,
-      Neptune: `
-        🌊 <b>Distance du Soleil :</b> 4,5 milliards km<br>
-        ⏱️ <b>Année :</b> 165 ans terrestres<br>
-        💨 <b>Vents :</b> > 2 000 km/h<br>
-        🌡️ <b>Température :</b> -200°C
-      `
+      Soleil: `⭐ <b>Type :</b> Étoile naine jaune (G2V)<br>🌡️ <b>Température :</b> 5 500 °C<br>⚡ <b>Âge :</b> 4,6 milliards d'années<br>💥 <b>Rôle :</b> Source d'énergie du système solaire`,
+      Mercure: `🟠 <b>Distance :</b> 58 millions km<br>⏱️ <b>Année :</b> 88 jours<br>🌡️ <b>Température :</b> -180°C à +430°C<br>🧱 <b>Composition :</b> Roche métallique`,
+      Vénus: `💨 <b>Distance :</b> 108 millions km<br>⏱️ <b>Année :</b> 225 jours<br>🌫️ <b>Atmosphère :</b> CO₂ + acide sulfurique<br>🌡️ <b>Température :</b> 465°C`,
+      Terre: `🌍 <b>Distance :</b> 150 millions km<br>⏱️ <b>Année :</b> 365 jours<br>🌡️ <b>Moyenne :</b> 15°C<br>💧 <b>Vie :</b> eau liquide<br>🌙 <b>Lune :</b> satellite naturel`,
+      Mars: `🔴 <b>Distance :</b> 228 millions km<br>⏱️ <b>Année :</b> 687 jours<br>🌡️ <b>Moyenne :</b> -60°C<br>🧱 <b>Surface :</b> poussière de fer`,
+      Jupiter: `🌕 <b>Distance :</b> 778 millions km<br>⏱️ <b>Année :</b> 12 ans<br>💨 <b>Atmosphère :</b> H/He<br>⚡ <b>Particularité :</b> grande tache rouge`,
+      Saturne: `❄️ <b>Distance :</b> 1,4 milliard km<br>⏱️ <b>Année :</b> 29 ans<br>💠 <b>Anneaux :</b> glace + poussière<br>🌡️ <b>Température :</b> -140°C`,
+      Uranus: `💎 <b>Distance :</b> 2,9 milliards km<br>⏱️ <b>Année :</b> 84 ans<br>🌀 <b>Inclinaison :</b> 98°<br>🌡️ <b>Température :</b> -195°C`,
+      Neptune: `🌊 <b>Distance :</b> 4,5 milliards km<br>⏱️ <b>Année :</b> 165 ans<br>💨 <b>Vents :</b> > 2000 km/h<br>🌡️ <b>Température :</b> -200°C`
     };
 
     function showInfo(name) {
@@ -278,32 +250,44 @@
       planetText.innerHTML = planetInfo[name] || "Aucune information disponible.";
     }
 
-    /* --- ORBITES --- */
-    function orbit(planet, distance, duration) {
+    /* --- ORBITES VISUELLES (mêmes paramètres que l’animation) --- */
+    function createOrbitShape(dx, dy) {
+      const o = document.createElement("div");
+      o.className = "orbit";
+      o.style.width = (dx * 2) + "px";
+      o.style.height = (dy * 2) + "px";
+      space.appendChild(o);
+      orbitElements.push(o);
+    }
+
+    function orbit(planet, dx, dy, duration) {
       const anim = anime({
         targets: planet,
         rotate: "1turn",
         duration,
         easing: "linear",
         loop: true,
-        update: a => {
-          const ang = a.progress / 100 * 2 * Math.PI;
-          planet.style.transform = `translate(${Math.cos(ang) * distance}px, ${Math.sin(ang) * distance}px)`;
+        autoplay: true,
+        update: (a) => {
+          const ang = (a.progress / 100) * 2 * Math.PI;
+          const x = Math.cos(ang) * dx;
+          const y = Math.sin(ang) * dy;
+          planet.style.transform = `translate(${x}px, ${y}px)`;
         }
       });
       planetOrbits.push({ anim, baseDuration: duration });
     }
 
-    orbit(document.querySelector(".mercury"),100,4000);
-    orbit(document.querySelector(".venus"),150,7000);
-    orbit(document.querySelector(".earth"),210,10000);
-    orbit(document.querySelector(".mars"),260,13000);
-    orbit(document.querySelector(".jupiter"),330,20000);
-    orbit(document.querySelector(".saturn"),400,25000);
-    orbit(document.querySelector(".uranus"),470,30000);
-    orbit(document.querySelector(".neptune"),540,35000);
+    orbit(document.querySelector(".mercury"), 100, 100, 4000);  createOrbitShape(100, 100);
+    orbit(document.querySelector(".venus"),   150, 150, 7000);  createOrbitShape(150, 150);
+    orbit(document.querySelector(".earth"),   210, 210, 10000); createOrbitShape(210, 210);
+    orbit(document.querySelector(".mars"),    260, 260, 13000); createOrbitShape(260, 260);
+    orbit(document.querySelector(".jupiter"), 330, 330, 20000); createOrbitShape(330, 330);
+    orbit(document.querySelector(".saturn"),  400, 400, 25000); createOrbitShape(400, 400);
+    orbit(document.querySelector(".uranus"),  470, 470, 30000); createOrbitShape(470, 470);
+    orbit(document.querySelector(".neptune"), 540, 540, 35000); createOrbitShape(540, 540);
 
-    /* --- LUNE (référence anim pour pause/play) --- */
+    /* --- LUNE --- */
     const earth = document.querySelector(".earth");
     const moon = document.createElement("div");
     moon.className = "moon";
@@ -315,13 +299,13 @@
       duration: 2500,
       loop: true,
       easing: "linear",
-      update: a => {
-        const ang = a.progress / 100 * 2 * Math.PI;
-        moon.style.transform = `translate(${Math.cos(ang) * 28}px, ${Math.sin(ang) * 28}px)`;
+      update: (a) => {
+        const ang = (a.progress / 100) * 2 * Math.PI;
+        moon.style.transform = `translate(${Math.cos(ang)*28}px, ${Math.sin(ang)*28}px)`;
       }
     });
 
-    /* --- SONS + unlock mobile --- */
+    /* --- SONS + unlock --- */
     const planetSounds = {
       Soleil: new Audio("sun.mp3"),
       Mercure: new Audio("mercury.mp3"),
@@ -357,7 +341,7 @@
       planetSounds[name]?.play().catch(()=>{});
     }
 
-    /* --- CLICS (INFO + SON) --- */
+    /* --- CLICS --- */
     planets.forEach(p => {
       p.addEventListener("click", () => {
         const name = p.dataset.name;
@@ -365,24 +349,39 @@
         playSound(name);
       });
     });
-
     sun.addEventListener("click", () => {
       showInfo("Soleil");
       playSound("Soleil");
     });
 
     /* --- SLIDERS --- */
-    document.getElementById("speed-range").addEventListener("input", e => {
+    const speedRange = document.getElementById("speed-range");
+    const speedValue = document.getElementById("speed-value");
+    speedRange.addEventListener("input", e => {
       globalSpeed = parseFloat(e.target.value);
-      document.getElementById("speed-value").textContent = globalSpeed.toFixed(1) + "x";
+      speedValue.textContent = globalSpeed.toFixed(1) + "x";
       planetOrbits.forEach(o => o.anim.duration = o.baseDuration / globalSpeed);
     });
 
-    document.getElementById("zoom-range").addEventListener("input", e => {
-      zoomLevel = parseFloat(e.target.value);
-      document.getElementById("zoom-value").textContent = zoomLevel.toFixed(1) + "x";
+    const zoomRange = document.getElementById("zoom-range");
+    const zoomValue = document.getElementById("zoom-value");
+    function applyZoom() {
       space.style.transform = `scale(${zoomLevel})`;
+      zoomRange.value = zoomLevel;
+      zoomValue.textContent = zoomLevel.toFixed(1) + "x";
+    }
+    zoomRange.addEventListener("input", e => {
+      zoomLevel = parseFloat(e.target.value);
+      applyZoom();
     });
+
+    /* molette zoom (comme avant) */
+    window.addEventListener("wheel", e => {
+      e.preventDefault();
+      zoomLevel += e.deltaY * -0.001;
+      zoomLevel = Math.min(Math.max(0.5, zoomLevel), 2.5);
+      applyZoom();
+    }, { passive: false });
 
     /* --- BOUTON SON --- */
     const toggleSoundBtn = document.getElementById("toggle-sound");
@@ -393,7 +392,7 @@
       if (!soundEnabled) stopAllSounds();
     });
 
-    /* --- BOUTON PAUSE SYSTEME --- */
+    /* --- BOUTON PAUSE --- */
     const toggleSystemBtn = document.getElementById("toggle-system");
     toggleSystemBtn.addEventListener("click", () => {
       systemPaused = !systemPaused;
@@ -411,6 +410,17 @@
         toggleSystemBtn.classList.remove("paused");
       }
     });
+
+    /* --- BOUTON ORBITES 💫 --- */
+    const toggleOrbitsBtn = document.getElementById("toggle-orbits");
+    toggleOrbitsBtn.addEventListener("click", () => {
+      orbitsVisible = !orbitsVisible;
+      orbitElements.forEach(o => o.style.display = orbitsVisible ? "block" : "none");
+      toggleOrbitsBtn.textContent = orbitsVisible ? "💫 Orbites : ON" : "💫 Orbites : OFF";
+    });
+
+    // état initial zoom affichage
+    applyZoom();
   </script>
 </body>
 </html>
