@@ -8,7 +8,6 @@
 </head>
 
 <body>
-
   <!-- ===== FOND ETOILÉ FIXE ===== -->
   <div class="stars-layer"></div>
 
@@ -68,24 +67,19 @@
     /* --- FOND ETOILE --- */
     .stars-layer {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       z-index: 0;
       pointer-events: none;
     }
-
     .star {
       position: absolute;
-      width: 2px;
-      height: 2px;
+      width: 2px; height: 2px;
       background: white;
       border-radius: 50%;
       opacity: 0.4;
       animation: twinkle 3s infinite alternate;
     }
-
     @keyframes twinkle {
       from { opacity: 0.3; }
       to   { opacity: 1; }
@@ -93,29 +87,24 @@
 
     /* --- SYSTEME --- */
     .space-container {
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       z-index: 2;
     }
-
     .space {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
       transform-origin: center center;
       transition: transform 0.3s ease;
     }
 
     .sun {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100px;
-      height: 100px;
+      top: 50%; left: 50%;
+      width: 100px; height: 100px;
       background: radial-gradient(circle, #ffcc33, #ff6600);
       border-radius: 50%;
       box-shadow: 0 0 40px 20px rgba(255,200,50,0.8);
@@ -125,8 +114,7 @@
 
     .planet {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       border-radius: 50%;
       cursor: pointer;
     }
@@ -140,20 +128,16 @@
     .neptune { width: 24px; height: 24px; background: royalblue; }
 
     .saturn {
-      width: 30px;
-      height: 30px;
+      width: 30px; height: 30px;
       background: khaki;
       border-radius: 50%;
       position: relative;
       z-index: 2;
     }
-
     .saturn .ring {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80px;
-      height: 28px;
+      top: 50%; left: 50%;
+      width: 80px; height: 28px;
       transform: translate(-50%, -50%) rotate(18deg);
       border-radius: 50%;
       background: conic-gradient(
@@ -168,8 +152,7 @@
 
     .moon {
       position: absolute;
-      width: 7px;
-      height: 7px;
+      width: 7px; height: 7px;
       background: white;
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(255,255,255,.8);
@@ -178,15 +161,13 @@
     /* --- PANNEAU --- */
     #info-panel {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 10px; left: 10px;
       background: rgba(0,0,0,0.7);
       border-radius: 10px;
       padding: 15px;
       width: 330px;
       z-index: 3;
     }
-
     .slider-container {
       display: flex;
       align-items: center;
@@ -194,13 +175,7 @@
       margin-top: 6px;
       font-size: 13px;
     }
-
-    .controls-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
+    .controls-row { display: flex; gap: 10px; margin-top: 10px; }
     .control-btn {
       padding: 8px 12px;
       border-radius: 8px;
@@ -209,14 +184,8 @@
       color: white;
       cursor: pointer;
     }
-
-    .control-btn.off {
-      background: rgba(255,0,0,0.15);
-    }
-
-    .control-btn.paused {
-      background: rgba(255,255,255,0.1);
-    }
+    .control-btn.off { background: rgba(255,0,0,0.15); }
+    .control-btn.paused { background: rgba(255,255,255,0.1); }
   </style>
 
   <!-- ===== JS ===== -->
@@ -226,12 +195,15 @@
     const space = document.querySelector(".space");
     const planetOrbits = [];
 
+    const planetName = document.getElementById("planet-name");
+    const planetText = document.getElementById("planet-info");
+
     let globalSpeed = 1;
     let zoomLevel = 1;
     let soundEnabled = true;
     let systemPaused = false;
 
-    /* --- ETOILES --- */
+    /* --- ETOILES (fond plein écran) --- */
     const starsLayer = document.querySelector(".stars-layer");
     for (let i = 0; i < 300; i++) {
       const star = document.createElement("div");
@@ -240,6 +212,70 @@
       star.style.left = Math.random() * 100 + "%";
       star.style.animationDuration = (2 + Math.random() * 4) + "s";
       starsLayer.appendChild(star);
+    }
+
+    /* --- INFOS --- */
+    const planetInfo = {
+      Soleil: `
+        ⭐ <b>Type :</b> Étoile naine jaune (G2V)<br>
+        🌡️ <b>Température surface :</b> 5 500 °C<br>
+        ⚡ <b>Âge :</b> 4,6 milliards d'années<br>
+        💥 <b>Rôle :</b> Source d'énergie et de gravité du système solaire
+      `,
+      Mercure: `
+        🟠 <b>Distance du Soleil :</b> 58 millions km<br>
+        ⏱️ <b>Année :</b> 88 jours terrestres<br>
+        🌡️ <b>Température :</b> -180°C à +430°C<br>
+        🧱 <b>Composition :</b> Roche métallique
+      `,
+      Vénus: `
+        💨 <b>Distance du Soleil :</b> 108 millions km<br>
+        ⏱️ <b>Année :</b> 225 jours terrestres<br>
+        🌫️ <b>Atmosphère :</b> CO₂ et nuages d'acide sulfurique<br>
+        🌡️ <b>Température moyenne :</b> 465°C
+      `,
+      Terre: `
+        🌍 <b>Distance du Soleil :</b> 150 millions km<br>
+        ⏱️ <b>Année :</b> 365 jours<br>
+        🌡️ <b>Température moyenne :</b> 15°C<br>
+        💧 <b>Spécificité :</b> Présence d'eau liquide et de vie
+        <br>🌙 <b>La lune :</b> Satellite naturel de la Terre<br>
+      `,
+      Mars: `
+        🔴 <b>Distance du Soleil :</b> 228 millions km<br>
+        ⏱️ <b>Année :</b> 687 jours terrestres<br>
+        🌡️ <b>Température moyenne :</b> -60°C<br>
+        🧱 <b>Surface :</b> poussière de fer rougeâtre, calottes de glace
+      `,
+      Jupiter: `
+        🌕 <b>Distance du Soleil :</b> 778 millions km<br>
+        ⏱️ <b>Année :</b> 12 ans terrestres<br>
+        💨 <b>Atmosphère :</b> Hydrogène et hélium<br>
+        ⚡ <b>Particularité :</b> La plus grande planète, grande tache rouge
+      `,
+      Saturne: `
+        ❄️ <b>Distance du Soleil :</b> 1,4 milliard km<br>
+        ⏱️ <b>Année :</b> 29 ans terrestres<br>
+        💠 <b>Anneaux :</b> Glace et poussière<br>
+        🌡️ <b>Température :</b> -140°C
+      `,
+      Uranus: `
+        💎 <b>Distance du Soleil :</b> 2,9 milliards km<br>
+        ⏱️ <b>Année :</b> 84 ans terrestres<br>
+        🌀 <b>Inclinaison :</b> 98° sur le côté<br>
+        🌡️ <b>Température :</b> -195°C
+      `,
+      Neptune: `
+        🌊 <b>Distance du Soleil :</b> 4,5 milliards km<br>
+        ⏱️ <b>Année :</b> 165 ans terrestres<br>
+        💨 <b>Vents :</b> > 2 000 km/h<br>
+        🌡️ <b>Température :</b> -200°C
+      `
+    };
+
+    function showInfo(name) {
+      planetName.textContent = name;
+      planetText.innerHTML = planetInfo[name] || "Aucune information disponible.";
     }
 
     /* --- ORBITES --- */
@@ -252,7 +288,7 @@
         loop: true,
         update: a => {
           const ang = a.progress / 100 * 2 * Math.PI;
-          planet.style.transform = `translate(${Math.cos(ang)*distance}px, ${Math.sin(ang)*distance}px)`;
+          planet.style.transform = `translate(${Math.cos(ang) * distance}px, ${Math.sin(ang) * distance}px)`;
         }
       });
       planetOrbits.push({ anim, baseDuration: duration });
@@ -267,7 +303,7 @@
     orbit(document.querySelector(".uranus"),470,30000);
     orbit(document.querySelector(".neptune"),540,35000);
 
-    /* --- LUNE --- */
+    /* --- LUNE (référence anim pour pause/play) --- */
     const earth = document.querySelector(".earth");
     const moon = document.createElement("div");
     moon.className = "moon";
@@ -281,59 +317,100 @@
       easing: "linear",
       update: a => {
         const ang = a.progress / 100 * 2 * Math.PI;
-        moon.style.transform = `translate(${Math.cos(ang)*28}px, ${Math.sin(ang)*28}px)`;
+        moon.style.transform = `translate(${Math.cos(ang) * 28}px, ${Math.sin(ang) * 28}px)`;
       }
+    });
+
+    /* --- SONS + unlock mobile --- */
+    const planetSounds = {
+      Soleil: new Audio("sun.mp3"),
+      Mercure: new Audio("mercury.mp3"),
+      Vénus: new Audio("venus.mp3"),
+      Terre: new Audio("earth.mp3"),
+      Mars: new Audio("mars.mp3"),
+      Jupiter: new Audio("jupiter.mp3"),
+      Saturne: new Audio("saturn.mp3"),
+      Uranus: new Audio("uranus.mp3"),
+      Neptune: new Audio("neptune.mp3")
+    };
+
+    function stopAllSounds() {
+      Object.values(planetSounds).forEach(s => { s.pause(); s.currentTime = 0; });
+    }
+
+    let audioUnlocked = false;
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      Object.values(planetSounds).forEach(sound => {
+        sound.play().catch(()=>{});
+        sound.pause();
+        sound.currentTime = 0;
+      });
+      audioUnlocked = true;
+    }
+    window.addEventListener("touchstart", unlockAudio, { once: true });
+    window.addEventListener("click", unlockAudio, { once: true });
+
+    function playSound(name) {
+      if (!soundEnabled) return;
+      stopAllSounds();
+      planetSounds[name]?.play().catch(()=>{});
+    }
+
+    /* --- CLICS (INFO + SON) --- */
+    planets.forEach(p => {
+      p.addEventListener("click", () => {
+        const name = p.dataset.name;
+        showInfo(name);
+        playSound(name);
+      });
+    });
+
+    sun.addEventListener("click", () => {
+      showInfo("Soleil");
+      playSound("Soleil");
     });
 
     /* --- SLIDERS --- */
     document.getElementById("speed-range").addEventListener("input", e => {
       globalSpeed = parseFloat(e.target.value);
-      document.getElementById("speed-value").textContent = globalSpeed + "x";
+      document.getElementById("speed-value").textContent = globalSpeed.toFixed(1) + "x";
       planetOrbits.forEach(o => o.anim.duration = o.baseDuration / globalSpeed);
     });
 
     document.getElementById("zoom-range").addEventListener("input", e => {
       zoomLevel = parseFloat(e.target.value);
-      document.getElementById("zoom-value").textContent = zoomLevel + "x";
+      document.getElementById("zoom-value").textContent = zoomLevel.toFixed(1) + "x";
       space.style.transform = `scale(${zoomLevel})`;
     });
 
-    /* --- SONS --- */
-    const planetSounds = {
-      Soleil:new Audio("sun.mp3"),
-      Mercure:new Audio("mercury.mp3"),
-      Vénus:new Audio("venus.mp3"),
-      Terre:new Audio("earth.mp3"),
-      Mars:new Audio("mars.mp3"),
-      Jupiter:new Audio("jupiter.mp3"),
-      Saturne:new Audio("saturn.mp3"),
-      Uranus:new Audio("uranus.mp3"),
-      Neptune:new Audio("neptune.mp3")
-    };
-
-    function playSound(name) {
-      if (!soundEnabled) return;
-      Object.values(planetSounds).forEach(s => { s.pause(); s.currentTime = 0; });
-      planetSounds[name]?.play().catch(()=>{});
-    }
-
-    planets.forEach(p => {
-      p.addEventListener("click", () => playSound(p.dataset.name));
-    });
-    sun.addEventListener("click", () => playSound("Soleil"));
-
-    /* --- BOUTONS --- */
-    document.getElementById("toggle-sound").onclick = () => {
+    /* --- BOUTON SON --- */
+    const toggleSoundBtn = document.getElementById("toggle-sound");
+    toggleSoundBtn.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
-      document.getElementById("toggle-sound").textContent =
-        soundEnabled ? "🔊 Son : ON" : "🔇 Son : OFF";
-    };
+      toggleSoundBtn.textContent = soundEnabled ? "🔊 Son : ON" : "🔇 Son : OFF";
+      toggleSoundBtn.classList.toggle("off", !soundEnabled);
+      if (!soundEnabled) stopAllSounds();
+    });
 
-    document.getElementById("toggle-system").onclick = () => {
+    /* --- BOUTON PAUSE SYSTEME --- */
+    const toggleSystemBtn = document.getElementById("toggle-system");
+    toggleSystemBtn.addEventListener("click", () => {
       systemPaused = !systemPaused;
-      planetOrbits.forEach(o => systemPaused ? o.anim.pause() : o.anim.play());
-      systemPaused ? moonAnim.pause() : moonAnim.play();
-    };
+
+      if (systemPaused) {
+        planetOrbits.forEach(o => o.anim.pause());
+        moonAnim.pause();
+        stopAllSounds();
+        toggleSystemBtn.textContent = "▶ Reprendre système";
+        toggleSystemBtn.classList.add("paused");
+      } else {
+        planetOrbits.forEach(o => o.anim.play());
+        moonAnim.play();
+        toggleSystemBtn.textContent = "⏸️ Pause système";
+        toggleSystemBtn.classList.remove("paused");
+      }
+    });
   </script>
 </body>
 </html>
